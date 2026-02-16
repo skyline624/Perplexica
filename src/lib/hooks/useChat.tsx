@@ -57,6 +57,7 @@ type ChatContext = {
     rewrite?: boolean,
   ) => Promise<void>;
   rewrite: (messageId: string) => void;
+  deleteMessage: (messageId: string) => Promise<void>;
   setChatModelProvider: (provider: ChatModelProvider) => void;
   setEmbeddingModelProvider: (provider: EmbeddingModelProvider) => void;
 };
@@ -258,6 +259,7 @@ export const chatContext = createContext<ChatContext>({
   researchEnded: false,
   rewrite: () => {},
   sendMessage: async () => {},
+  deleteMessage: async () => {},
   setFileIds: () => {},
   setFiles: () => {},
   setSources: () => {},
@@ -534,6 +536,34 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
 
     const messageToRewrite = messages[index];
     sendMessage(messageToRewrite.query, messageToRewrite.messageId, true);
+  };
+
+  const deleteMessage = async (messageId: string) => {
+    const index = messages.findIndex((msg) => msg.messageId === messageId);
+
+    if (index === -1) return;
+
+    try {
+      const res = await fetch(`/api/chats/${chatId}/messages/${messageId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || 'Failed to delete message');
+      }
+
+      setMessages((prev) => prev.slice(0, index));
+      chatHistory.current = chatHistory.current.slice(0, index * 2);
+
+      toast.success('Message deleted successfully');
+    } catch (err: any) {
+      console.error('Error deleting message:', err);
+      toast.error(err.message || 'Failed to delete message');
+    }
   };
 
   useEffect(() => {
@@ -827,6 +857,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         setSources,
         setOptimizationMode,
         rewrite,
+        deleteMessage,
         sendMessage,
         setChatModelProvider,
         chatModelProvider,

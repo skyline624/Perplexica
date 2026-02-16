@@ -15,6 +15,7 @@ import {
 import Markdown, { MarkdownToJSX, RuleType } from 'markdown-to-jsx';
 import Copy from './MessageActions/Copy';
 import Rewrite from './MessageActions/Rewrite';
+import DeleteMessage from './MessageActions/DeleteMessage';
 import MessageSources from './MessageSources';
 import SearchImages from './SearchImages';
 import SearchVideos from './SearchVideos';
@@ -54,6 +55,7 @@ const MessageBox = ({
     loading,
     sendMessage,
     rewrite,
+    deleteMessage,
     messages,
     researchEnded,
     chatHistory,
@@ -192,6 +194,10 @@ const MessageBox = ({
                     <div className="flex flex-row items-center -ml-2">
                       <Rewrite
                         rewrite={rewrite}
+                        messageId={section.message.messageId}
+                      />
+                      <DeleteMessage
+                        deleteMessage={deleteMessage}
                         messageId={section.message.messageId}
                       />
                     </div>
